@@ -1,0 +1,104 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Chat</title>
+    <script src="config.js"></script>
+</head>
+<body>
+    <h2>Firebase Realtime Chat</h2>
+    
+    <input type="text" id="msgInput" placeholder="Type a message">
+    <button id="sendBtn">Send</button>
+
+    <div id="chat"></div>
+
+    <script type="module">
+
+
+        function getCurrentTime() {
+            let now = new Date();
+            return now.toLocaleString(); // Returns formatted date and time
+        }
+
+        console.log(getCurrentTime());
+
+        // Import Firebase SDKs
+        import { 
+            initializeApp 
+        } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+
+        import { 
+            getDatabase, ref, push, onChildAdded, remove 
+        } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: api,
+            authDomain: "sample1-e7506.firebaseapp.com",
+            databaseURL: "https://sample1-e7506-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "sample1-e7506",
+            storageBucket: "sample1-e7506.appspot.com",
+            messagingSenderId: "246896326854",
+            appId: "1:246896326854:web:bc58a827f5d67e5f9cbfc7",
+            measurementId: "G-YEGYPFZQYS"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const messagesRef = ref(db, "messages");
+
+        // Send Message
+        document.getElementById("sendBtn").addEventListener("click", async function () {
+            const messageInput = document.getElementById("msgInput");
+            const message = getCurrentTime() + " >>> " + messageInput.value.trim();
+            
+            if (message !== "") {
+                push(messagesRef, { 
+                    text: message
+                });
+                messageInput.value = ""; // Clear input field
+            }
+        });
+
+        // Listen for new messages & update UI
+        onChildAdded(messagesRef, (snapshot) => {
+            const messageData = snapshot.val();
+            const messageKey = snapshot.key;
+
+            const messageElement = document.createElement("div");
+            messageElement.id = `message-${messageKey}`;
+            messageElement.innerHTML = `
+                <p>${messageData.text} <br> <small>${messageKey}</small></p>
+                <button onclick="deleteMessage('${messageKey}')">Delete</button>
+                <hr>
+            `;
+
+            document.getElementById("chat").appendChild(messageElement);
+        });
+
+        // Delete Message Function
+        window.deleteMessage = function (messageKey) {
+            const messageRef = ref(db, "messages/" + messageKey);
+
+            remove(messageRef)
+                .then(() => {
+                    console.log("Message deleted:", messageKey);
+
+                    // Remove message from UI
+                    const messageElement = document.getElementById(`message-${messageKey}`);
+                    if (messageElement) {
+                        messageElement.remove();
+                    }
+                })
+                .catch((error) => console.error("Error deleting message:", error));
+        };
+
+    </script>
+</body>
+</html>
