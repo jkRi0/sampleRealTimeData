@@ -58,12 +58,22 @@
             const messageInput = document.getElementById("msgInput");
             const message = getCurrentTime() + " >>> " + messageInput.value.trim();
             
-            if (message !== "") {
+            fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.ip);
+
+                if (message !== "") {
                 push(messagesRef, { 
-                    text: message
-                });
-                messageInput.value = ""; // Clear input field
+                    text: message,
+                    uniqueID: data.ip
+                 });
+                messageInput.value = "";
             }
+            })
+            .catch(error => {
+                console.error(error);
+            });
         });
 
         // Listen for new messages & update UI
