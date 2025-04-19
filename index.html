@@ -16,6 +16,10 @@
     <div id="chat"></div>
 
     <script type="module">
+        if (!window.fetch) {
+            console.log('Fetch not supported on this browser!');
+        }
+        
         import { api } from "./config.js";
 
 
@@ -58,18 +62,18 @@
             const messageInput = document.getElementById("msgInput");
             const message = getCurrentTime() + " >>> " + messageInput.value.trim();
             
-            fetch('https://api.ipify.org?format=json')
+            fetch('https://ipapi.co/json/')
             .then(response => response.json())
             .then(data => {
                 console.log(data.ip);
 
                 if (message !== "") {
-                push(messagesRef, { 
-                    text: message,
-                    uniqueID: data.ip
-                 });
-                messageInput.value = "";
-            }
+                    push(messagesRef, { 
+                        text: message,
+                        uniqueID: data.ip
+                    });
+                    messageInput.value = "";
+                }
             })
             .catch(error => {
                 console.error(error);
